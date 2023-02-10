@@ -24,9 +24,13 @@ deployment_resources_path="$user_home/deployments"
 cloudcmd_namespace="cloudcmd"
 local_cloudcmd_path="/vagrant_data/cloudcmd.yaml"
 
+# gitlab
+deploy_gitlab=false
+gitlab_url=http://localhost:8080
+
 # Software Requirements
 show_help(){
-echo "Userscript for tap instance bootrap.
+echo "Userscript for tap instance bootstrap.
 
 Options available:
     -h              this help
@@ -38,6 +42,7 @@ Options available:
                     options -l and -r can't be specified at the same time
     -j              specify a custom jenkins helm chart version; defaults to $jenkins_helm_chart_version
     -b              specify bootstrap branch from where to pull the installation resources (jenkins value file, cloudcmd manifests, etc...)
+    -g              deploy gitlab instead of jenkins
 
 Examples:
 
@@ -49,7 +54,7 @@ Examples:
 }
 
 # Parsing arguments for username and password
-while getopts h?u:p:j:b:lr flag
+while getopts h?u:p:j:b:g:lr flag
 do
     case "${flag}" in
         h|\?)
@@ -70,7 +75,10 @@ do
             jenkins_helm_chart_version=$OPTARG
             ;;
         b)
-          bootstrap_branch=$OPTARG
+            bootstrap_branch=$OPTARG
+            ;;
+        g)
+            deploy_gitlab=$OPTARG
     esac
 done
 
@@ -213,7 +221,34 @@ download_deployment_resources(){
     cd $user_home
     rm -Rf deployments
     git clone https://github.com/aquasecurity/deployments.git
-    chown $username: -R $deployment_resources_path
+    chown "$username":"$username" -R $deployment_resources_path
+}
+
+gitlab() {
+    export KUBECONFIG=/root/kubeconfig
+
+    echo "Installing Gitlab..."
+    
+    # Wait until k3s is ready
+    until kubectl get nodes; do sleep 1; done
+    
+    echo "Remote deploy: $remote_resources"
+    if [ $remote_resources == true ]; then
+        wget https://raw.githubusercontent.com/aqua-ps/aqua-training-userscript/${bootstrap_branch}/gitlab.yaml -O /tmp/gitlab.yaml
+        TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600") && public_host=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.254/latest/meta-data/public-hostname)
+        gitlab_url="https://$public_host:31043"
+    else
+        cp /vagrant_data/gitlab.yaml /tmp/gitlab.yaml
+    fi
+
+    sed -i "s@EXTERNALURL@$gitlab_url@g" /tmp/gitlab.yaml
+    sed -i "s@|PASSWORD|@$password@g" /tmp/gitlab.yaml
+    
+    echo "Applying /tmp/gitlab.yaml"
+    kubectl apply -f /tmp/gitlab.yaml
+    echo "Done."
+
+    # Add healthcheck
 }
 
 
@@ -223,6 +258,13 @@ setup_docker
 setup_k3s
 install_k8s_utilities
 setup_userenv
-deploy_jenkins
+
+if $deploy_gitlab; 
+then
+    gitlab
+else
+    deploy_jenkins
+fi
+
 deploy_cloudcmd
 download_deployment_resources
