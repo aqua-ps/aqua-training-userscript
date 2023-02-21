@@ -70,11 +70,7 @@ spec:
       - name: gitlab
         persistentVolumeClaim:
           claimName: gitlab-pvc
-      - name: certs
-        secret:
-          secretName: gitlab-certs
     
-
 ---
 
 apiVersion: v1
