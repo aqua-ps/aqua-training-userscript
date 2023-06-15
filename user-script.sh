@@ -54,7 +54,7 @@ Examples:
 }
 
 # Parsing arguments for username and password
-while getopts h?u:p:j:b:g:lr flag
+while getopts h?u:p:j:b:glr flag
 do
     case "${flag}" in
         h|\?)
