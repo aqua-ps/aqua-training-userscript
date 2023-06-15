@@ -150,8 +150,8 @@ install_k8s_utilities(){
     # kubectx, kubens, k9s
     wget https://github.com/ahmetb/kubectx/releases/download/$kubectx_version/kubens -O /usr/local/bin/kubens
     wget https://github.com/ahmetb/kubectx/releases/download/$kubectx_version/kubectx -O /usr/local/bin/kubectx
-    wget https://github.com/derailed/k9s/releases/download/$k9s_version/k9s_Linux_x86_64.tar.gz -O /tmp/k9s_Linux_x86_64.tar.gz
-    tar xzvf /tmp/k9s_Linux_x86_64.tar.gz -C /usr/local/bin/ k9s
+    wget https://github.com/derailed/k9s/releases/download/$k9s_version/k9s_Linux_amd64.tar.gz -O /tmp/k9s_Linux_amd64.tar.gz
+    tar xzvf /tmp/k9s_Linux_amd64.tar.gz -C /usr/local/bin/ k9s
     chmod +x /usr/local/bin/k*
 
     # helm
