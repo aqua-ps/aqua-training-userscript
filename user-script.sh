@@ -13,6 +13,10 @@ bootstrap_branch=master
 k3s_version=v1.24.4+k3s1
 cri_dockerd_url=https://github.com/Mirantis/cri-dockerd/releases/download/v0.2.5/cri-dockerd_0.2.5.3-0.ubuntu-focal_amd64.deb
 
+# tools
+k9s_version=v0.27.4
+kubectx_version=v0.9.4
+
 # jenkins
 jenkins_helm_chart_version=4.1.18
 local_jenkins_values_path="/vagrant_data/jenkins_${jenkins_helm_chart_version}_values.yaml"
@@ -144,9 +148,9 @@ setup_k3s(){
 
 install_k8s_utilities(){
     # kubectx, kubens, k9s
-    wget https://github.com/ahmetb/kubectx/releases/download/v0.9.4/kubens -O /usr/local/bin/kubens
-    wget https://github.com/ahmetb/kubectx/releases/download/v0.9.4/kubectx -O /usr/local/bin/kubectx
-    wget https://github.com/derailed/k9s/releases/download/v0.26.3/k9s_Linux_x86_64.tar.gz -O /tmp/k9s_Linux_x86_64.tar.gz
+    wget https://github.com/ahmetb/kubectx/releases/download/$kubectx_version/kubens -O /usr/local/bin/kubens
+    wget https://github.com/ahmetb/kubectx/releases/download/$kubectx_version/kubectx -O /usr/local/bin/kubectx
+    wget https://github.com/derailed/k9s/releases/download/$k9s_version/k9s_Linux_x86_64.tar.gz -O /tmp/k9s_Linux_x86_64.tar.gz
     tar xzvf /tmp/k9s_Linux_x86_64.tar.gz -C /usr/local/bin/ k9s
     chmod +x /usr/local/bin/k*
 
