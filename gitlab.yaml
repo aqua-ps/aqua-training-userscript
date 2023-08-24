@@ -45,6 +45,12 @@ spec:
         - name: gitlab
           mountPath: /var/opt/gitlab
           subPath: var
+        - name: certificates-secret
+          mountPath: /etc/ssl/certs/
+          readOnly: true
+        - name: config
+          mountPath: /etc/gitlab/gitlab.rb
+          subPath: gitlab.rb
         ports:
           - containerPort: 443
             protocol: TCP
@@ -53,9 +59,19 @@ spec:
           - containerPort: 22
             protocol: TCP            
       volumes:
+      - name: certificates-secret
+        secret:
+          secretName: gitlab-certs-secret
       - name: gitlab
         persistentVolumeClaim:
           claimName: gitlab-pvc
+      - name: config
+        configMap: 
+          name: gitlab-rb-configmap
+          items:
+            - key: gitlab.rb
+              path: gitlab.rb
+
 ---
 
 apiVersion: v1
@@ -94,3 +110,48 @@ spec:
       port: 22
       targetPort: 22
       nodePort: 32022
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitlab-certs-secret
+type: Opaque
+data:
+  ssl-cert.pem: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURoakNDQW02Z0F3SUJBZ0lFT1FIRU9qQU5CZ2txaGtpRzl3MEJBUXNGQURCYk1TY3dKUVlEVlFRRERCNVNaV2RsY25rZ1UyVnMNClppMVRhV2R1WldRZ1EyVnlkR2xtYVdOaGRHVXhJekFoQmdOVkJBb01HbEpsWjJWeWVTd2dhSFIwY0hNNkx5OXlaV2RsY25rdVkyOXQNCk1Rc3dDUVlEVlFRR0V3SlZRVEFnRncweU16QTRNalF3TURBd01EQmFHQTh5TVRJek1EZ3lOREUxTURrd04xb3dTREVVTUJJR0ExVUUNCkF3d0xaMmwwYkdGaUxuUmxjM1F4SXpBaEJnTlZCQW9NR2xKbFoyVnllU3dnYUhSMGNITTZMeTl5WldkbGNua3VZMjl0TVFzd0NRWUQNClZRUUdFd0pWUVRDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBSW4zcDdwZWRSZEdDanlrc2x1Zjd6bEMNCmlvQkdTYm5RMGVKVGhqc3A1dkZpWnpxWEZyQ3JBWnJ5WVdWOXdGUTBPZ0p5bmJFZ1pOTmxEMGp0OHNraW4yZG5pK09hUGVNamNDUFcNClYxN3BGY1ZuQ0ZKYmgyU3hibm5tT211dWhud0VCMlByVDdoZkZQWjMrbWMvbDRkN1h1TTZJSTVWSTJtTXBKY2dmQ0lYOHcwNkprQ2MNCnNaYzM5UkdreXZNMmVFQkhDSWRFWFVDODdoRitjNThITld6RWNaaXZyRHpoWm55QTRhYktYVVNjYXd1azkvSzQyM1N4QVFUdUF6ZHgNCkx2cDdPWjMramp6bzM1cFRTR3Y3N3lTMFdydGk0U2Z6b3BYVnB0YVgxVzVYZDRKMFNvcXRtWEUxSkpYTFFRczFGZ2xsM0dtdi9GRlcNCklyb0lXY09Mc1Nhb0lzVUNBd0VBQWFOak1HRXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QU9CZ05WSFE4QkFmOEVCQU1DQVlZd0hRWUQNClZSME9CQllFRkNNWkJ5cjZHaUVscDd4YlBDNHJWY0xjNUcyU01COEdBMVVkSXdRWU1CYUFGQ01aQnlyNkdpRWxwN3hiUEM0clZjTGMNCjVHMlNNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUI5VmJ1YnZGMWh6SStMSnVqTkxHRkhNYVZlZXhJc1N6YkpLSCtHeEppQTZqUUcNCnJ1WHVFNzBLVVdzd2c0cnUzRXMvQ0RpMWJtZ1pINGxlaWdaQUNjWDBtY2NKMkkwbkRETFcralcwekpocFpzMTRZUE9KL2RMM1RneEENCmkrWXQzWThPcGUrVThmVUpXSFhtbVJORm9JdUpONnhNVDd4RGpLQ2h2R3plRStpajgyWEhSNXVaRWxaVFRMeGFBTkFiOEZVV1QzOHgNClA0d0dOOGJ5SkNOSTAzNXoxNG8yTFdMNFd3Z1REbG0rZ0ZKbWF1SmJvWHRBOWZWdUk0S0J2aUFCdS93Z1I3ZUtKWUJVYnpLYytTZncNCnNqZ2JTMmhCT0pOREl5Tk1ZSmhTYUFEL1JCdHJKOFQyelpoR09uckVIck1EaVdLT3RacmFka2JnQk9YU0xGWVF4ajRTCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  ssl-cert.key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBaWZlbnVsNTFGMFlLUEtTeVc1L3ZPVUtLZ0VaSnVkRFI0bE9HT3lubThXSm5PcGNXCnNLc0JtdkpoWlgzQVZEUTZBbktkc1NCazAyVVBTTzN5eVNLZloyZUw0NW85NHlOd0k5WlhYdWtWeFdjSVVsdUgKWkxGdWVlWTZhNjZHZkFRSFkrdFB1RjhVOW5mNlp6K1hoM3RlNHpvZ2psVWphWXlrbHlCOEloZnpEVG9tUUp5eApsemYxRWFUSzh6WjRRRWNJaDBSZFFMenVFWDV6bndjMWJNUnhtSytzUE9GbWZJRGhwc3BkUkp4ckM2VDM4cmpiCmRMRUJCTzRETjNFdStuczVuZjZPUE9qZm1sTklhL3Z2SkxSYXUyTGhKL09pbGRXbTFwZlZibGQzZ25SS2lxMloKY1RVa2xjdEJDelVXQ1dYY2FhLzhVVllpdWdoWnc0dXhKcWdpeFFJREFRQUJBb0lCQUFGUUJWejlEQkVpSGZQUQp2MCttMkdCTGxVUytKbkpwbmEyUkROeGdQQzI4dVcyeHhVbjkvb0JxWU9uVnhmQW5KUXdqNmdNbTR6NnRuZlVjCktteW1jeXpKSytnSTdpRE1sQU1MUlg2R0tpcGNIaFNtZ1VYQWVHUVpnQ0hKSWNkcFJHYTdkT0UwcWw3ajZsSjAKSk8xcGk1QU8zQU51cE8wYXBQQTVJMlV4cENMU2tMZ0VJQ3VvNkMxSlUxb2lmVU5ZbURIcmk2SGorNGY0UHpjcwpPNzE0QS9oRGdaZTJaVkE3MlZRcldFNlNkSGl1bDZFYXExdXVycUFZcFVjdU9XMWtHazQ0c0djRUdlTlBjS1YyClBUME9SYyt5UElrSmNvUmxIYlp3eVh6TVF0Q0J6TUdUbU01TytmbERLWGVnVGw4bzJQdVJjTU5tc29DTmRLaHgKWE9YbFVZRUNnWUVBeVRaemZybEJKNUJXMGdmOUk0K0MvZzMvdmJMTEFjekRwN0lsU041a2lCWlRhREFtMUozQwpnRlVmeGcxK2JZWHFkZE15ek9VSjZjcjEyVHBrOUY4cDNDbHkxVHRTZ0dvWFR5MVo3WnVnOGg4QXRMRGlZWG1VCkZteGN4bGRUMU9DcTkwem1zT2FKVmVDblB5OUR5b2NOdFVibGk4ZGN5MFlUbmthQWxUd0pmb1VDZ1lFQXI0aXYKWWl3bUZrMzYraXE1ZWJYMDRqcjNOTlFib1Nha2pJWFl1TDFJSDVlRDhrRGd2bDJNUTFhNk0rTkFEUkdCdUQxZgpyc0FWMG90Yi9PVTdtM1VlL05XbXhUMVRmR0JYNlVXbzUxZVlmaTNxbVNoeWluYncxd01zZzBBdER1cWVUNWpJCk1EcEpKcTRhNFUzNUdORGhvLzBNYUdScjcwUllhdzR0UU1OUjUwRUNnWUFQNmJXQ25TWVErZkpUMC92cUZ3eDIKQ1Nkam1rTkIxaTdYRVZpdmhaOFB3Q3hDZmlSa0JrSCtvanpNRGY4a3JFV1pvZVZQblFHR3N0MTBtNUNtWHV4UgpsQm1YMFlRNTBhb2NRZXJ0eHJRWTBlamRZV3ZWNTZhVmkyWmU3VU1jLzlPbGtUaGhYeW9YVjVnQ2dEdHRSZmNJCmtoM1BTeW9FalhzNXRqdXZFYnR5ZlFLQmdFbUNMeGdvcnVhR1Q0VTJJU2drRitJcG1WNnBPTXphdHV3V0hUVDQKSjF6N2dZa1F2RTFjTmFINWpzNnQ2eVBONGduNndiZ1h2c3ZHQ29hMHBLcXNlSWFmSGxEWkpyNGVScEpzMXBmUwo2Z3hsUkNwUmN1NGpjeVpIc1B0aUE3eU1hakdoSkt4MXJDNmptS1FqbUI1WlV6VHVncVN3OFRabzQ3SXBaTEFMClc2QkJBb0dCQUlyN0F2Qk1BUkl6YnpObEp1NDUxS0NXT1hRZFRjRHYvUkd6OURwdlVwSW8zMnEyb3VZb1poSVYKSHI0ZU94U0lnSHpieDgzUU84aG1DVTA2eUhyT0ZGQmNuQkF5MFFNb1NCTlBlSUc0Ui9DRzViWS9SaHVFV3N5dApUcFpGVzhPWTdGVFIvc0VGVlJSUUxEOU5sV3VHNi83aHBINGFqNGg2ZGZJRVBOWUJWUHFPCi0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
+
+--- 
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitlab-rb-configmap
+  labels:
+    app: gitlab
+data:
+  gitlab.rb: |
+    ## GitLab configuration settings
+
+    # Stop redirecting HTTP to HTTPS
+    nginx['redirect_http_to_https'] = false
+
+    # Don't attempt to provision a TLS certificate
+    letsencrypt['enable'] = false
+
+    # Disable nginx's status endpoint
+    nginx['status'] = {
+      'enable' => false
+    }
+    nginx['ssl_certificate'] = "/etc/ssl/certs/ssl-cert.pem"
+    nginx['ssl_certificate_key'] = "/etc/ssl/private/ssl-cert.key"
+
+    # Just 2 workers
+    puma['worker_processes'] = 2
+
+    # 10 jobs is still quite a lot
+    sidekiq['max_concurrency'] = 10
+    grafana['enable'] = false
+    prometheus_monitoring['enable'] = false
+    alertmanager['enable'] = false
