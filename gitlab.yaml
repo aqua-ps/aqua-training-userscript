@@ -145,7 +145,7 @@ data:
       'enable' => false
     }
     nginx['ssl_certificate'] = "/etc/ssl/certs/ssl-cert.pem"
-    nginx['ssl_certificate_key'] = "/etc/ssl/private/ssl-cert.key"
+    nginx['ssl_certificate_key'] = "/etc/ssl/certs/ssl-cert.key"
 
     # Just 2 workers
     puma['worker_processes'] = 2
