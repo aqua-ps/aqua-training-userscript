@@ -25,20 +25,6 @@ spec:
       containers:
       - image: gitlab/gitlab-ce:latest
         name: gitlab
-        livenessProbe:
-          failureThreshold: 5
-          httpGet:
-            path: '/-/liveness'
-            port: http
-          periodSeconds: 10
-          timeoutSeconds: 5
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: "/-/readiness"
-            port: http
-          periodSeconds: 10
-          timeoutSeconds: 5
         resources: 
          limits:
            memory: "3Gi"
