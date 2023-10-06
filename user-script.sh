@@ -29,8 +29,8 @@ cloudcmd_namespace="cloudcmd"
 local_cloudcmd_path="/vagrant_data/cloudcmd.yaml"
 
 # gitlab
-deploy_gitlab=false
-gitlab_url=http://localhost:8080
+use_gitlab=false
+local_gitlab_values_path="/vagrant_data/gitlab.yaml"
 
 # Software Requirements
 show_help(){
@@ -82,7 +82,7 @@ do
             bootstrap_branch=$OPTARG
             ;;
         g)
-            deploy_gitlab=$OPTARG
+            use_gitlab=$OPTARG
     esac
 done
 
@@ -228,8 +228,9 @@ download_deployment_resources(){
     chown "$username":"$username" -R $deployment_resources_path
 }
 
-gitlab() {
+deploy_gitlab() {
     export KUBECONFIG=/root/kubeconfig
+    gitlab_url="http://gitlab-service.gitlab.svc.cluster.local"
 
     echo "Installing Gitlab..."
     
@@ -240,9 +241,10 @@ gitlab() {
     if [ $remote_resources == true ]; then
         wget https://raw.githubusercontent.com/aqua-ps/aqua-training-userscript/${bootstrap_branch}/gitlab.yaml -O /tmp/gitlab.yaml
         TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600") && public_host=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.254/latest/meta-data/public-hostname)
-        gitlab_url="https://$public_host:31043"
+        # If ec2 instance, replace gitlab url with externally accessible name
+        gitlab_url="http://$public_host:32080"
     else
-        cp /vagrant_data/gitlab.yaml /tmp/gitlab.yaml
+        cp $local_gitlab_values_path /tmp/gitlab.yaml
     fi
 
     sed -i "s@EXTERNALURL@$gitlab_url@g" /tmp/gitlab.yaml
@@ -252,7 +254,17 @@ gitlab() {
     kubectl apply -f /tmp/gitlab.yaml
     echo "Done."
 
-    # Add healthcheck
+    # setup demo repo and user
+    git clone https://github.com/hdiv/insecure-bank.git
+
+    kubectl rollout status deploy/gitlab -n gitlab -w
+    echo "Modifying gitlab default user"
+    kubectl exec deploy/gitlab -n gitlab -- gitlab-rails runner "user = User.find_by_username('root'); user.username='$username'; user.save!"
+
+    echo "Prepping demo repo"
+    cd insecure-bank && git remote set-url origin http://$username:$password@127.0.0.1:32080/$username/insecure-bank.git
+    git push origin master
+
 }
 
 
@@ -263,9 +275,9 @@ setup_k3s
 install_k8s_utilities
 setup_userenv
 
-if $deploy_gitlab; 
+if $use_gitlab;
 then
-    gitlab
+    deploy_gitlab
 else
     deploy_jenkins
 fi
