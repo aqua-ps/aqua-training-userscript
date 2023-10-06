@@ -57,7 +57,13 @@ spec:
           - containerPort: 80
             protocol: TCP
           - containerPort: 22
-            protocol: TCP            
+            protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /users/sign_in
+            port: 80
+            scheme: HTTP
       volumes:
       - name: certificates-secret
         secret:
