@@ -232,6 +232,9 @@ deploy_gitlab() {
     export KUBECONFIG=/root/kubeconfig
     gitlab_url="http://gitlab-service.gitlab.svc.cluster.local"
 
+    # Pre-download Gitlab image because it's a bit chunky and occasionally times out when k8s tries to pull it
+    docker pull gitlab/gitlab-ce:latest
+
     echo "Installing Gitlab..."
     
     # Wait until k3s is ready
