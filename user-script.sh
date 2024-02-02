@@ -232,6 +232,9 @@ deploy_gitlab() {
     export KUBECONFIG=/root/kubeconfig
     gitlab_url="http://gitlab-service.gitlab.svc.cluster.local"
 
+    # Pre-download Gitlab image because it's a bit chunky and occasionally times out when k8s tries to pull it
+    docker pull gitlab/gitlab-ce:latest
+
     echo "Installing Gitlab..."
     
     # Wait until k3s is ready
@@ -259,7 +262,7 @@ deploy_gitlab() {
 
     kubectl rollout status deploy/gitlab -n gitlab -w
     echo "Modifying gitlab default user"
-    kubectl exec deploy/gitlab -n gitlab -- gitlab-rails runner "user = User.find_by_username('root'); user.username='$username'; user.save!"
+    kubectl exec deploy/gitlab -n gitlab -- gitlab-rails runner "user = User.find_by_username('root'); user.username='$username'; user.save!; group = Group.create(name: 'default', path: 'default'); group.add_owner(user); group.save!"
 
     echo "Prepping demo repo"
     cd insecure-bank && git remote set-url origin http://$username:$password@127.0.0.1:32080/$username/insecure-bank.git
