@@ -262,7 +262,7 @@ deploy_gitlab() {
 
     kubectl rollout status deploy/gitlab -n gitlab -w
     echo "Modifying gitlab default user"
-    kubectl exec deploy/gitlab -n gitlab -- gitlab-rails runner "user = User.find_by_username('root'); user.username='$username'; user.save!; group = Group.create(name: 'default', path: 'default'); group.add_owner(user); group.save!"
+    kubectl exec deploy/gitlab -n gitlab -- gitlab-rails runner "user = User.find_by_username('root'); user.username='$username'; user.save! ; group = Group.create(name: 'default', path: 'default'); group.add_owner(user); group.save! "
 
     echo "Prepping demo repo"
     cd insecure-bank && git remote set-url origin http://$username:$password@127.0.0.1:32080/$username/insecure-bank.git
