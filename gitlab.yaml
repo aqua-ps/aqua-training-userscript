@@ -17,11 +17,11 @@ spec:
   selector:
     matchLabels:
       app: gitlab
+  progressDeadlineSeconds: 900
   template:
     metadata:
       labels:
         app: gitlab
-  progressDeadlineSeconds: 900
     spec:
       containers:
       - image: gitlab/gitlab-ce:latest
