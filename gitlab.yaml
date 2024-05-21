@@ -161,7 +161,7 @@ data:
     puma['worker_processes'] = 2
 
     # 10 jobs is still quite a lot
-    sidekiq['max_concurrency'] = 10
+    sidekiq['concurrency'] = 10
     grafana['enable'] = false
     prometheus_monitoring['enable'] = false
     alertmanager['enable'] = false
