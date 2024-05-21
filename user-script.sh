@@ -3,34 +3,6 @@
 # default user creds
 username=aquatapuser
 password=aquatapuser
-user_home="/home/$username"
-
-# installation type
-remote_resources=true
-bootstrap_branch=master
-
-# k3s
-k3s_version=v1.24.4+k3s1
-cri_dockerd_url=https://github.com/Mirantis/cri-dockerd/releases/download/v0.2.5/cri-dockerd_0.2.5.3-0.ubuntu-focal_amd64.deb
-
-# tools
-k9s_version=v0.27.4
-kubectx_version=v0.9.4
-
-# jenkins
-jenkins_helm_chart_version=4.1.18
-local_jenkins_values_path="/vagrant_data/jenkins_${jenkins_helm_chart_version}_values.yaml"
-
-# deployments
-deployment_resources_path="$user_home/deployments"
-
-# cloudcmd
-cloudcmd_namespace="cloudcmd"
-local_cloudcmd_path="/vagrant_data/cloudcmd.yaml"
-
-# gitlab
-use_gitlab=false
-local_gitlab_values_path="/vagrant_data/gitlab.yaml"
 
 # Software Requirements
 show_help(){
@@ -86,6 +58,34 @@ do
     esac
 done
 
+user_home="/home/$username"
+
+# installation type
+remote_resources=true
+bootstrap_branch=master
+
+# k3s
+k3s_version=v1.24.4+k3s1
+cri_dockerd_url=https://github.com/Mirantis/cri-dockerd/releases/download/v0.2.5/cri-dockerd_0.2.5.3-0.ubuntu-focal_amd64.deb
+
+# tools
+k9s_version=v0.27.4
+kubectx_version=v0.9.4
+
+# jenkins
+jenkins_helm_chart_version=4.1.18
+local_jenkins_values_path="/vagrant_data/jenkins_${jenkins_helm_chart_version}_values.yaml"
+
+# deployments
+deployment_resources_path="$user_home/deployments"
+
+# cloudcmd
+cloudcmd_namespace="cloudcmd"
+local_cloudcmd_path="/vagrant_data/cloudcmd.yaml"
+
+# gitlab
+use_gitlab=false
+local_gitlab_values_path="/vagrant_data/gitlab.yaml"
 
 # Setup SSH password authentication
 setup_ssh(){
