@@ -92,7 +92,8 @@ deployment_resources_path="$user_home/deployments"
 # Setup SSH password authentication
 setup_ssh(){
     # Allow SSH password authentication
-    sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+    sed -i 's/#PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+    sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
     systemctl restart sshd
 }
 
